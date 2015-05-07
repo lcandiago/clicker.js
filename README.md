@@ -10,13 +10,11 @@ Just change "yourID" for the element ID you want to Click.
 ```sh
   function setConfigs(){
 		turnClickable("yourID1");
-		turnClickable("YourID2");
-		turnClickable("YourID3");
-		turnClickable("YourID...");
-
-		var botao = document.getElementById("on_off_button");
-		botao.getElementsByTagName("p")[0].innerHTML = "Stop the Clicks!!";
-		botao.addEventListener("click", function() {location.reload()}, false);
+		//turnClickable("YourID2");
+		//turnClickable("YourID3");
+		//turnClickable("YourID...");
+		
+		//...
 	}
 ```
 
