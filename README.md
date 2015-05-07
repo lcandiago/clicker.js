@@ -21,4 +21,4 @@ Just change "yourID" for the element ID you want to Click.
 ```
 
 # Example
-http://www.vagabeatles.com.br - Turn on the Clicker Mode at the top-right button "Let's Click".
+- [VagaBeatles Website](http://www.vagabeatles.com.br) - Turn on the Clicker Mode at the top-right button "Let's Click".
