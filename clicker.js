@@ -123,8 +123,39 @@ if (mq.matches) {
 	    return {left:offsetLeft, top:offsetTop};
 	}
 
+	function createClickerJSStylesheet(){
+		var id = 'clickerjs-style';
+		if(document.getElementById(id))
+			return;
+
+		var head = document.head || document.getElementsByTagName('head')[0];
+		var style = document.createElement('style');
+		style.id = id;
+		style.appendChild(document.createTextNode(''));
+		head.insertBefore(style, head.firstChild);
+		style.sheet.insertRule(getClickerJSCSSString(), 0);
+	}
+
+	function getClickerJSCSSString(){
+		var str = '';
+
+		str += '.score_table {';
+		str += 'position: absolute;';
+		str += 'text-align: center;';
+		str += 'background-color: rgba(255, 255, 255, 0.7);';
+		str += 'padding-left: 3px;';
+		str += 'padding-right: 3px;';
+		str += 'border-radius: 40px;';
+		str += 'height: 20px;';
+		str += 'color: black;';
+		str += '}';
+
+		return str;
+	}
+
 	(function(){
 		window._CLICKERJS = window._CLICKERJS || { active: false, ids: [] };
+		createClickerJSStylesheet();
 
 		if(document.readyState === 'complete')
 			prepareClickerJS();
