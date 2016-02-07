@@ -3,21 +3,45 @@
 var mq = window.matchMedia( "(min-width: 767px)" );
 
 if (mq.matches) {
+	function prepareClickerJS(){
+		createOnOffButton();
+	}
+
 	// Turn an element Clickable by ID
 	function turnClickable(id){
+		if(window._CLICKERJS.ids.indexOf(id) > -1)
+			return;
+
+		window._CLICKERJS.ids.push(id);
+		if(window._CLICKERJS.active)
+			displayScore(id);
+	}
+
+	function displayScore(id){
 		var element = document.getElementById(id);
+		if(!element)
+			throw 'Clicker.js: Element with id "' + id + '" not found!';
 
-		if(!element.clickable){
-			element.clickable = true;
-
-			element.addEventListener("click", function() {addScore(element)}, false)
-
-			if(window.localStorage[element.id+"_score"] == null){
-				window.localStorage[element.id+"_score"] = "0";
-			}
-			createScoreTable(element);
+		element.addEventListener("click", clickerJSListener, false);
+		if(window.localStorage[element.id+"_score"] == null){
+			window.localStorage[element.id+"_score"] = "0";
 		}
+		createScoreTable(element);
+	}
 
+	function removeScore(id){
+		var element = document.getElementById(id);
+		if(!element)
+			throw 'Clicker.js: Element with id "' + id + '" not found!';
+
+		element.removeEventListener("click", clickerJSListener);
+		var score = document.getElementById(element.id + "_scoretable");
+		if(score)
+			document.body.removeChild(score);
+	}
+
+	function clickerJSListener(){
+		addScore(this);
 	}
 
 	// Add element score on Local Storage
@@ -25,7 +49,7 @@ if (mq.matches) {
 		window.localStorage[element.id+"_score"]++;
 
 		var ele = document.getElementById(element.id + "_scoretable");
-		ele.getElementsByTagName("p")[0].innerHTML = window.localStorage[element.id+"_score"];
+		ele.getElementsByTagName("span")[0].innerHTML = window.localStorage[element.id+"_score"];
 
 		console.log(window.localStorage[element.id+"_score"]);
 	}
@@ -33,7 +57,7 @@ if (mq.matches) {
 
 	function createScoreTable(element){
 		var dive = document.createElement("div");
-		var para = document.createElement("p");
+		var para = document.createElement("span");
 		var node = document.createTextNode(window.localStorage[element.id+"_score"]);
 		
 		dive.className = "score_table";
@@ -50,21 +74,36 @@ if (mq.matches) {
 	}
 
 	function createOnOffButton(){
-			var dive = document.createElement("div");
-			var para = document.createElement("p");
-			var node = document.createTextNode("Let's Click!");
+		var id = 'on_off_button';
+		if(document.getElementById(id))
+			return;
 
-			dive.className = "score_table";
-			dive.id = "on_off_button";
+		var dive = document.createElement("div");
+		var para = document.createElement("span");
+		var node = document.createTextNode("Let's Click!");
 
-			dive.style.right = "20px";
-			dive.style.top = "15px";
+		dive.className = "score_table";
+		dive.id = id;
 
-			para.appendChild(node);
-			dive.appendChild(para);
-			document.body.appendChild(dive);
+		dive.style.right = "20px";
+		dive.style.top = "15px";
 
-			dive.addEventListener("click", function() {setConfigs()}, false);
+		para.appendChild(node);
+		dive.appendChild(para);
+		document.body.appendChild(dive);
+
+		dive.addEventListener("click", function(){ clickerJSToggleActive(); }, false);
+	}
+
+	function clickerJSToggleActive(){
+		var status = window._CLICKERJS.active = !window._CLICKERJS.active;
+
+		var functionName = status ? 'displayScore' : 'removeScore';
+		for(var len = window._CLICKERJS.ids.length; len--;)
+			window[functionName](window._CLICKERJS.ids[len]);
+
+		var botao = document.getElementById("on_off_button");
+		botao.getElementsByTagName("span")[0].innerHTML = status ? "Stop the Clicks!!" : "Let's Click!";
 	}
 
 	function getPosicaoElemento(elemID){
@@ -84,21 +123,43 @@ if (mq.matches) {
 	    return {left:offsetLeft, top:offsetTop};
 	}
 
-	///
-	window.addEventListener("load", function() {
-		if(!document.getElementById("on_off_button")){
-			createOnOffButton();
-		}
-	}, false);
+	function createClickerJSStylesheet(){
+		var id = 'clickerjs-style';
+		if(document.getElementById(id))
+			return;
 
-	function setConfigs(){
-		turnClickable("yourID1");
-		turnClickable("YourID2");
-		turnClickable("YourID3");
-		turnClickable("YourID...");
-
-		var botao = document.getElementById("on_off_button");
-		botao.getElementsByTagName("p")[0].innerHTML = "Stop the Clicks!!";
-		botao.addEventListener("click", function() {location.reload()}, false);
+		var head = document.head || document.getElementsByTagName('head')[0];
+		var style = document.createElement('style');
+		style.id = id;
+		style.appendChild(document.createTextNode(''));
+		head.insertBefore(style, head.firstChild);
+		style.sheet.insertRule(getClickerJSCSSString(), 0);
 	}
+
+	function getClickerJSCSSString(){
+		var str = '';
+
+		str += '.score_table {';
+		str += 'position: absolute;';
+		str += 'text-align: center;';
+		str += 'background-color: rgba(255, 255, 255, 0.7);';
+		str += 'padding-left: 3px;';
+		str += 'padding-right: 3px;';
+		str += 'border-radius: 40px;';
+		str += 'height: 20px;';
+		str += 'color: black;';
+		str += '}';
+
+		return str;
+	}
+
+	(function(){
+		window._CLICKERJS = window._CLICKERJS || { active: false, ids: [] };
+		createClickerJSStylesheet();
+
+		if(document.readyState === 'complete')
+			prepareClickerJS();
+		else
+			window.addEventListener('load', function() { prepareClickerJS(); }, false);
+	})();
 }
